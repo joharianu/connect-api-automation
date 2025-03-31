@@ -37,6 +37,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-*.wagman.properties
+src/test/resources/wagman.properties
 .idea
 allure-results
