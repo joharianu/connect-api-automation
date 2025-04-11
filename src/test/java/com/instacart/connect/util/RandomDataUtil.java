@@ -11,6 +11,22 @@ public class RandomDataUtil {
 
     private RandomDataUtil() {}
 
+    public static String getRandomId() {
+        return UUID.randomUUID().toString();
+    }
+
+    public static int getRandomCents() {
+        return faker.number().numberBetween(500, 2000);
+    }
+
+    public static long getShortRandomNumber() {
+        return faker.number().numberBetween(1L,10L);
+    }
+
+    public static String getRandomDate() {
+        return faker.date().birthday(18,50).toString();
+    }
+
     public static User createUserData() {
         return User.builder().
         first_name(faker.name().firstName()).

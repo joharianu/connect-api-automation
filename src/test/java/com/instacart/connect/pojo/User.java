@@ -1,10 +1,10 @@
 package com.instacart.connect.pojo;
 
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
 @Builder
-@Getter
+@Data
 public class User {
 
     private String user_id;
