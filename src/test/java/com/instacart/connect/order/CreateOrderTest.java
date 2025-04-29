@@ -9,10 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CreateOrderTest {
 
+    private static List<String> states  =
+            List.of("picking", "verifying_replacements", "checkout", "receipt_sanity_check", "delivering", "completed");
     private static Logger logger = LoggerFactory.getLogger(CreateOrderTest.class);
 
     private static String externalUserId = null;
@@ -22,6 +26,8 @@ public class CreateOrderTest {
     private static Long serviceOptionHoldId = null;
     private static String orderId = null;
     private static String orderStatus = null;
+    private static String shopperId = null;
+    private static String batchId = null;
 
     @Test(priority = 1)
     public void createUser() {
@@ -111,6 +117,47 @@ public class CreateOrderTest {
 
     }
 
+    @Test(priority = 6)
+    public void createShopper() {
+        CreateShopper createOrder = CreateShopper.builder()
+                .email(RandomDataUtil.getRandomEmail())
+                .phone(RandomDataUtil.getPhoneNumber())
+                .password("123456")
+                .build();
+        Response response = CommonApiService
+                .post("/v2/fulfillment_sandbox/shoppers", createOrder);
+        response.then().assertThat().statusCode(200);
+        shopperId = response.getBody().jsonPath().getString("id");
+        logger.info("Shopper Created with Id : {}", shopperId);
+    }
+
+    @Test(priority = 7)
+    public void generateBatch() {
+        GenerateBatch generateBatch = GenerateBatch.builder()
+                .shopper_id(shopperId)
+                .batch_type("delivery")
+                .orders(List.of(GenerateBatch.Order.builder()
+                        .id(orderId)
+                        .user_id(externalUserId)
+                        .build())).build();
+        Response response = CommonApiService
+                .post("/v2/fulfillment_sandbox/batches", generateBatch);
+        response.then().assertThat().statusCode(200);
+        batchId = response.getBody().jsonPath().getString("id");
+        logger.info("Batch Created with Id : {}", batchId);
+    }
+
+    @Test(priority = 8)
+    public void advanceBatchToCompleted() {
+        states.forEach(state -> {
+            Response response = CommonApiService
+                    .post("/v2/fulfillment_sandbox/batches/"+batchId+"/advance", "{\"workflow_state\": \""+state+"\"}");
+            response.then().assertThat().statusCode(200);
+            String workflowState = response.getBody().jsonPath().getString("workflow_state");
+            assert workflowState.equals(state);
+        });
+
+    }
 
     private Address getAddress() {
         return Address.builder()

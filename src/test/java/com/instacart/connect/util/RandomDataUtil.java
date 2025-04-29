@@ -35,4 +35,13 @@ public class RandomDataUtil {
                 user_id(UUID.randomUUID().toString()).
                 build();
     }
+
+    public static String getRandomEmail() {
+        return faker.internet().emailAddress();
+    }
+
+    public static String getPhoneNumber() {
+        return faker.phoneNumber().cellPhone();
+    }
+
 }
